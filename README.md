@@ -1,3 +1,6 @@
+My goal:
+Make an Adyen compliant laptop friendly fork including express-handlebars and Node
+
 # Adyen Online Payment Integration Demos
 
 This repository includes a collection of PCI-compliant UI integrations that show how to integrate with Adyen using different payment methods. 
