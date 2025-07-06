@@ -9,10 +9,10 @@ async function createAdyenCheckout(paymentMethodsResponse) {
     environment: "test",
     amount: {
       value: 10000,
-      currency: 'EUR'
+      currency: 'USD'
     },
     locale: "en_US",
-    countryCode: 'NL',
+    countryCode: 'US',
     showPayButton: true,
     // override Security Code label
     translations: {

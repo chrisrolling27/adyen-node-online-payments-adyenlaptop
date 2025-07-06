@@ -1,3 +1,5 @@
+goal: adyen laptop friendly checkout advanced drop in with Node and express-handlebars
+
 # Adyen [Online Payments](https://docs.adyen.com/online-payments) Integration Demo - Advanced Flow
 
 Checkout sample application using `Adyen.Web Drop-in/Components v6.x.x`,  (see [folder /_archive/v5](./_archive/v5) to access the previous version using `Adyen.Web Drop-in/Components v5.x.x`).

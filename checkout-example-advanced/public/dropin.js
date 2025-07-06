@@ -20,11 +20,11 @@ async function startCheckout() {
       clientKey,
       environment: "test",
       amount: {
-        value: 10000,
-        currency: 'EUR'
+        value: 1000,
+        currency: 'USD'
       },
       locale: "en_US",
-      countryCode: 'NL',
+      countryCode: 'US',
       showPayButton: true,
       // override Security Code label
       translations: {

@@ -2,15 +2,13 @@ const express = require("express");
 const path = require("path");
 const hbs = require("express-handlebars");
 const dotenv = require("dotenv");
-const morgan = require("morgan");
-const { uuid } = require("uuidv4");
-const { hmacValidator } = require('@adyen/api-library');
+const { v4: uuid } = require("uuid");
+const { hmacValidator } = require("@adyen/api-library");
 const { Client, Config, CheckoutAPI } = require("@adyen/api-library");
 
 // init app
 const app = express();
-// setup request logging
-app.use(morgan("dev"));
+
 // Parse JSON bodies
 app.use(express.json());
 // Parse URL-encoded bodies
@@ -46,6 +44,7 @@ app.set("view engine", "handlebars");
 
 // Get payment methods
 app.post("/api/paymentMethods", async (req, res) => {
+  console.log('paymentMethods call!');
   try {
     const response = await checkout.PaymentsApi.paymentMethods({
       channel: "Web",
@@ -60,6 +59,7 @@ app.post("/api/paymentMethods", async (req, res) => {
 
 // submitting a payment
 app.post("/api/payments", async (req, res) => {
+  console.log('payments call!');
   const currency = findCurrency(req.body.paymentMethod.type);
   // find shopper IP from request
   const shopperIP = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
@@ -68,12 +68,12 @@ app.post("/api/payments", async (req, res) => {
     // unique ref for the transaction
     const orderRef = uuid();
     // allows for gitpod support
-    const localhost = req.get('host');
+    const localhost = req.get("host");
     // const isHttps = req.connection.encrypted;
-    const protocol = req.socket.encrypted? 'https' : 'http';    
+    const protocol = req.socket.encrypted ? "https" : "http";
     // ideally the data passed here should be computed based on business logic
     const response = await checkout.PaymentsApi.payments({
-      amount: { currency, value: 10000 }, // value is 100€ in minor units
+      amount: { currency, value: 100 }, // value is 100 in minor units
       reference: orderRef, // required
       merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT, // required
       channel: "Web", // required
@@ -88,8 +88,8 @@ app.post("/api/payments", async (req, res) => {
         //}
       },
       returnUrl: `${protocol}://${localhost}/handleShopperRedirect?orderRef=${orderRef}`, // required for 3ds2 redirect flow
-      paymentMethod : req.body.paymentMethod,
-      // we strongly recommend that you the billingAddress in your request. 
+      paymentMethod: req.body.paymentMethod,
+      // we strongly recommend that you the billingAddress in your request.
       // card schemes require this for channel web, iOS, and Android implementations.
       billingAddress:
         typeof req.body.billingAddress === "undefined" || Object.keys(req.body.billingAddress).length === 0
@@ -103,8 +103,8 @@ app.post("/api/payments", async (req, res) => {
       shopperEmail: "youremail@email.com",
       shopperLocale: "en_US",
       lineItems: [
-        {quantity: 1, amountIncludingTax: 5000 , description: "Sunglasses"},
-        {quantity: 1, amountIncludingTax: 5000 , description: "Headphones"}
+        { quantity: 1, amountIncludingTax: 5000, description: "Sunglasses" },
+        { quantity: 1, amountIncludingTax: 5000, description: "Headphones" },
       ],
     });
 
@@ -117,6 +117,7 @@ app.post("/api/payments", async (req, res) => {
 
 app.post("/api/payments/details", async (req, res) => {
   // Create the payload for submitting payment details
+  console.log('payments/details call!');
   const payload = {
     details: req.body.details,
     paymentData: req.body.paymentData,
@@ -134,13 +135,16 @@ app.post("/api/payments/details", async (req, res) => {
   }
 });
 
-
 /* ################# end API ENDPOINTS ###################### */
 
 /* ################# CLIENT SIDE ENDPOINTS ###################### */
 
 // Index (select a demo)
-app.get("/", (req, res) => res.render("index"));
+app.get("/", (req, res) => {
+  res.render("index", {
+    clientKey: process.env.ADYEN_CLIENT_KEY
+  });
+});
 
 // Cart (continue to checkout)
 app.get("/preview", (req, res) =>
@@ -151,37 +155,37 @@ app.get("/preview", (req, res) =>
 
 app.get("/checkout/dropin", (req, res) =>
   res.render("dropin", {
-    clientKey: process.env.ADYEN_CLIENT_KEY
+    clientKey: process.env.ADYEN_CLIENT_KEY,
   })
 );
 
 app.get("/checkout/card", (req, res) =>
   res.render("card", {
-    clientKey: process.env.ADYEN_CLIENT_KEY
+    clientKey: process.env.ADYEN_CLIENT_KEY,
   })
 );
 
 app.get("/checkout/googlepay", (req, res) =>
   res.render("googlepay", {
-    clientKey: process.env.ADYEN_CLIENT_KEY
+    clientKey: process.env.ADYEN_CLIENT_KEY,
   })
 );
 
 app.get("/checkout/ideal", (req, res) =>
   res.render("ideal", {
-    clientKey: process.env.ADYEN_CLIENT_KEY
+    clientKey: process.env.ADYEN_CLIENT_KEY,
   })
 );
 
 app.get("/checkout/klarna", (req, res) =>
   res.render("klarna", {
-    clientKey: process.env.ADYEN_CLIENT_KEY
+    clientKey: process.env.ADYEN_CLIENT_KEY,
   })
 );
 
 app.get("/checkout/sepa", (req, res) =>
   res.render("sepa", {
-    clientKey: process.env.ADYEN_CLIENT_KEY
+    clientKey: process.env.ADYEN_CLIENT_KEY,
   })
 );
 
@@ -227,7 +231,6 @@ app.all("/handleShopperRedirect", async (req, res) => {
   }
 });
 
-
 /* ################# end CLIENT SIDE ENDPOINTS ###################### */
 
 /* ################# WEBHOOK ###################### */
@@ -235,20 +238,19 @@ app.all("/handleShopperRedirect", async (req, res) => {
 // Process incoming Webhook: get NotificationRequestItem, validate HMAC signature,
 // consume the event asynchronously, send response status code 202
 app.post("/api/webhooks/notifications", async (req, res) => {
-
   // YOUR_HMAC_KEY from the Customer Area
   const hmacKey = process.env.ADYEN_HMAC_KEY;
-  const validator = new hmacValidator()
+  const validator = new hmacValidator();
   // Notification Request JSON
   const notificationRequest = req.body;
-  const notificationRequestItems = notificationRequest.notificationItems
+  const notificationRequestItems = notificationRequest.notificationItems;
 
   // fetch first (and only) NotificationRequestItem
-  const notification = notificationRequestItems[0].NotificationRequestItem
-  console.log(notification)
-  
+  const notification = notificationRequestItems[0].NotificationRequestItem;
+  console.log(notification);
+
   // Handle the notification
-  if( validator.validateHMAC(notification, hmacKey) ) {
+  if (validator.validateHMAC(notification, hmacKey)) {
     // valid hmac: process event
     const merchantReference = notification.merchantReference;
     const eventCode = notification.eventCode;
@@ -259,22 +261,17 @@ app.post("/api/webhooks/notifications", async (req, res) => {
 
     // acknowledge event has been consumed
     res.status(202).send(); // Send a 202 response with an empty body
-
   } else {
     // invalid hmac
     console.log("Invalid HMAC signature: " + notification);
-    res.status(401).send('Invalid HMAC signature');
+    res.status(401).send("Invalid HMAC signature");
   }
-
 });
 
 // process payload asynchronously
 function consumeEvent(notification) {
   // add item to DB, queue or different thread
-  
 }
-
-
 
 /* ################# UTILS ###################### */
 
