@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path");
-const hbs = require("express-handlebars");
+const hbs = require("express-handlebars"); 
 const dotenv = require("dotenv");
 const { v4: uuid } = require("uuid");
 const { hmacValidator } = require("@adyen/api-library");
@@ -31,7 +31,7 @@ const checkout = new CheckoutAPI(client);
 
 app.engine(
   "handlebars",
-  hbs.engine({
+  hbs({ // Call the imported variable directly as a function
     defaultLayout: "main",
     layoutsDir: __dirname + "/views/layouts",
     helpers: require("./util/helpers"),
