@@ -108,9 +108,9 @@ async function startCheckout() {
           currency: "USD",
         },
         placeholders: {
-          cardNumber: '1234 5678 9012 3456',
-          expiryDate: 'MM/YY',
-          securityCodeThreeDigits: '123',
+          cardNumber: '4111 1111 1111 1111',
+          expiryDate: '03/30',
+          securityCodeThreeDigits: '737',
           securityCodeFourDigits: '1234',
           holderName: 'J. Smith'
         }
