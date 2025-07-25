@@ -9,10 +9,10 @@ async function createAdyenCheckout(paymentMethodsResponse) {
     environment: "test",
     amount: {
       value: 10000,
-      currency: 'EUR'
+      currency: 'USD'
     },
     locale: "en_US",
-    countryCode: 'NL',
+    countryCode: 'US',
     showPayButton: true,
     onSubmit: async (state, component, actions) => {
       console.info("onSubmit", state, component, actions);
@@ -100,7 +100,7 @@ async function startCheckout() {
     const klarna = new Klarna(checkout, {
       // Types: 'klarna_paynow' (pay now), 'klarna' (pay later), 'klarna_account' (pay over time)
       // See: https://docs.adyen.com/payment-methods/klarna/web-component/#component-configuration
-      type: "klarna_paynow",
+      type: "klarna_account",
       useKlarnaWidget: false,
     }).mount('#component-container');
 

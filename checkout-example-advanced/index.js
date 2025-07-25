@@ -60,7 +60,8 @@ app.post("/api/paymentMethods", async (req, res) => {
 // submitting a payment
 app.post("/api/payments", async (req, res) => {
   console.log('payments call!');
-  const currency = findCurrency(req.body.paymentMethod.type);
+  //const currency = findCurrency(req.body.paymentMethod.type);
+  const currency = 'USD';
   // find shopper IP from request
   const shopperIP = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
@@ -98,9 +99,10 @@ app.post("/api/payments", async (req, res) => {
       deliveryDate: new Date("2017-07-17T13:42:40.428+01:00"),
       shopperStatement: "Aceitar o pagamento até 15 dias após o vencimento.Não cobrar juros. Não aceitar o pagamento com cheque",
       // below fields are required for Klarna, line items included
-      countryCode: req.body.paymentMethod.type.includes("klarna") ? "DE" : null,
-      shopperReference: "12345",
-      shopperEmail: "youremail@email.com",
+      //countryCode: req.body.paymentMethod.type.includes("klarna") ? "NL" : null,
+      countryCode: "US",
+      shopperReference: "53154",
+      shopperEmail: "chrisrolling27@email.com",
       shopperLocale: "en_US",
       lineItems: [
         { quantity: 1, amountIncludingTax: 5000, description: "Sunglasses" },
